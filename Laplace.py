@@ -28,6 +28,7 @@ def SolveLaplace(x, y, p, dx, dy, l1norm_target):
     
     nx, ny = p.shape
     
+    count = 0
     while l1norm > l1norm_target:
         pn = p.copy()
         
@@ -44,7 +45,10 @@ def SolveLaplace(x, y, p, dx, dy, l1norm_target):
         # Convergence.
         
         l1norm = np.sum(np.abs(p[:]) - np.abs(pn[:]))/np.sum(np.abs(pn[:]))
+        count += 1
         
+    print(l1norm, count)
+    
     return p
 
 
