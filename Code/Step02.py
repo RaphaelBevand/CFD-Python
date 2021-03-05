@@ -35,16 +35,20 @@ def calc_solution(courant, dx, axes, plot_initial=False):
     for _ in range(nt):
         solver(dx, dt, u)
     
+    axes.title.set_text(f"Time = {dt*nt:12.5f}")
     axes.plot(x, u, "-", label=f"Courant = {courant:.3f}")
 
 
-if __name__ == "__main__":
-    print("-".center(80, "-"))
-    print("Nonlinear Convection".center(80))
-    print("-".center(80, "-")) 
+def main():
+    title = "Nonlinear Convection (1D)"
     
     figure = plt.figure()
+    figure.suptitle(title)
     axes = figure.add_subplot(111)
+
+    print("-".center(80, "-"))
+    print(title.center(80))
+    print("-".center(80, "-"))
     
     kwargs = dict(dx=0.00025, axes=axes)
     calc_solution(courant=0.1, plot_initial=True, **kwargs)
@@ -56,4 +60,9 @@ if __name__ == "__main__":
     axes.grid(True)
     
     plt.legend()
+
+    
+if __name__ == "__main__":
+    main()
     plt.show()
+    

@@ -34,8 +34,10 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
             if (0.5 <= X[i,j] <= 1.0) and (0.5 <= Y[i,j] <= 1.0):
                 u[i,j] = speed
     
+    title = "Diffusion (2D)"
+    
     print("-".center(80, "-"))
-    print("Diffusion (2D)".center(80))
+    print(title.center(80))
     print("-".center(80, "-")) 
     
     strings = []
@@ -47,6 +49,7 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
     print(" | ".join(strings))
     
     figure = plt.figure(figsize=(11, 7), dpi=100)
+    figure.suptitle(title)
     colormap = cm.viridis # @UndefinedVariable
     axes = {}
     
@@ -94,8 +97,12 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
         figure.colorbar(contours, cax=cax, orientation="vertical")
     
     plt.tight_layout()
-    plt.show()
 
+
+def main():
+    calc_solution(diffusion=0.09, nu=0.01, dx=0.025, dy=0.025, plot_3d=False)
+    
 
 if __name__ == "__main__":
-    calc_solution(diffusion=0.09, nu=0.01, dx=0.025, dy=0.025, plot_3d=False)
+    main()
+    plt.show()

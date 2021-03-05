@@ -36,8 +36,10 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
                 u[i,j] = speed
                 v[i,j] = speed
     
+    title = "Nonlinear Convection & Diffusion (2D)"
+    
     print("-".center(80, "-"))
-    print("Nonlinear Convection & Diffusion (2D)".center(80))
+    print(title.center(80))
     print("-".center(80, "-")) 
     
     strings = []
@@ -48,6 +50,7 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
     print(" | ".join(strings))
     
     figure = plt.figure(figsize=(11, 7), dpi=100)
+    figure.suptitle(title)
     colormap = cm.viridis # @UndefinedVariable
     axes = {}
     
@@ -87,7 +90,7 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
     if plot_3d:
         axes[1].plot_surface(X, Y, u, cmap=colormap, rstride=1, cstride=1) 
     else:
-        contours = axes[1].contourf(X, Y, u)
+        contours = axes[1].contourf(X, Y, u, cmap=colormap)
         axes[1].set_aspect("equal")    
         
         divider = make_axes_locatable(axes[1])
@@ -95,8 +98,13 @@ def calc_solution(diffusion, nu, dx, dy, plot_3d=False):
         figure.colorbar(contours, cax=cax, orientation="vertical")
     
     plt.tight_layout()
-    plt.show()
 
 
-if __name__ == "__main__":
+def main():
     calc_solution(diffusion=9.e-4, nu=1.e-2, dx=0.025, dy=0.025, plot_3d=False)
+    
+    
+if __name__ == "__main__":
+    main()
+    plt.show()
+    

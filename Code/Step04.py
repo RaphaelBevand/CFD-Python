@@ -49,16 +49,20 @@ def calc_solution(diffusion, nu, dx, axes, plot_initial=False):
     for _ in range(nt):
         solver(nu, dx, dt, u)
     
+    axes.title.set_text(f"Time = {dt*nt:12.5f}")
     axes.plot(x, u, "-", label=f"Diffusion = {diffusion:.3f} (nu = {nu:.2e})")
 
 
-if __name__ == "__main__":
-    print("-".center(80, "-"))
-    print("Nonlinear Convection & Diffusion".center(80))
-    print("-".center(80, "-"))  
+def main():
+    title = "Nonlinear Convection & Diffusion (1D)"
     
     figure = plt.figure()
+    figure.suptitle(title)
     axes = figure.add_subplot(111)
+
+    print("-".center(80, "-"))
+    print(title.center(80))
+    print("-".center(80, "-"))
     
     kwargs = dict(dx=0.0025, axes=axes)
     calc_solution(diffusion=4.0e-1, nu=7.0e-1, plot_initial=True, **kwargs)
@@ -69,5 +73,8 @@ if __name__ == "__main__":
     axes.grid(True)
     
     plt.legend()
-    plt.show()
     
+        
+if __name__ == "__main__":
+    main()
+    plt.show()

@@ -1,5 +1,5 @@
 """
-Solve the two dimensional cavity flow.
+Solve the two dimensional channel flow.
 """
 import numpy as np
 
@@ -9,13 +9,13 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from Solvers import step_11 as solver # @UnresolvedImport
+from Solvers import step_12 as solver # @UnresolvedImport
 
 
 def calc_solution(inner, diffusion, nu, dx, dy):
-    xmax = 2.0
+    xmax = 5.0
     ymax = 2.0
-    tmax = 0.5
+    tmax = 5.0
     rho = 1.0
     
     dt = diffusion * min(dx, dy)**2 / nu
@@ -29,9 +29,10 @@ def calc_solution(inner, diffusion, nu, dx, dy):
 
     u = np.zeros((nx, ny), order="F")
     v = np.zeros((nx, ny), order="F")
-    p = np.zeros((nx, ny), order="F")
+    p = np.ones((nx, ny), order="F")
+    f = np.ones((nx, ny), order="F") * 5.0
     
-    title = "Navier-Stokes Cavity Flow (2D)"
+    title = "Navier-Stokes Channel Flow (2D)"
     
     print("-".center(80, "-"))
     print(title.center(80))
@@ -46,44 +47,38 @@ def calc_solution(inner, diffusion, nu, dx, dy):
     print(" | ".join(strings))
     
     for _ in range(nt):
-        solver(inner, dx, dy, dt, rho, nu, p, u, v)
-    
+        solver(inner, dx, dy, dt, rho, nu, f, p, u, v)
+        
     figure = plt.figure(figsize=(15, 8), dpi=100)
     figure.suptitle(title)
     colormap = cm.viridis # @UndefinedVariable
 
-    axes = {}
-    axes[0] = figure.add_subplot(131)
-    axes[1] = figure.add_subplot(132)
-    axes[2] = figure.add_subplot(133)
-
-    axes[0].title.set_text("Pressure P")
-    axes[1].title.set_text("Velocity U")
-    axes[2].title.set_text("Velocity V")
+    axes = figure.add_subplot(111)
+    axes.title.set_text("Velocity U")
     
-    k = 5
+    k = 2
     
-    for i, phi in enumerate([p, u, v]):
-        contours = axes[i].contourf(X, Y, phi, 10, alpha=0.5)
-        axes[i].contour(X, Y, phi, cmap=colormap)
-        axes[i].quiver(X[::k, ::k], Y[::k, ::k], u[::k, ::k], v[::k, ::k])
+    contours = axes.contourf(X, Y, u, 10, alpha=0.5)
+    axes.contour(X, Y, u, cmap=colormap)
+    axes.quiver(X[::k, ::k], Y[::k, ::k], u[::k, ::k], v[::k, ::k])
 
-        divider = make_axes_locatable(axes[i])
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        figure.colorbar(contours, cax=cax, orientation="vertical")
-        
-        axes[i].set_xlabel("x")
-        axes[i].set_ylabel("y")
-        axes[i].set_aspect("equal")
+    divider = make_axes_locatable(axes)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    figure.colorbar(contours, cax=cax, orientation="vertical")
+    
+    axes.set_xlabel("x")
+    axes.set_ylabel("y")
+    axes.set_aspect("equal")
         
     plt.tight_layout()
-    
+
 
 def main():
-    calc_solution(inner=50, diffusion=0.05, nu=0.1, dx=0.02, dy=0.02)
-    
+    calc_solution(inner=100, diffusion=0.05, nu=0.1, dx=0.0625, dy=0.025)
+
 
 if __name__ == "__main__":
     main()
     plt.show()
-    
+
+

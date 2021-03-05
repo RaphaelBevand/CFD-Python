@@ -34,8 +34,10 @@ def calc_solution(courant, dx, dy, plot_3d=False):
             if (0.5 <= X[i,j] <= 1.0) and (0.5 <= Y[i,j] <= 1.0):
                 u[i,j] = speed
     
+    title = "Linear Convection (2D)"
+    
     print("-".center(80, "-"))
-    print("Linear Convection (2D)".center(80))
+    print(title.center(80))
     print("-".center(80, "-")) 
     
     strings = []
@@ -46,6 +48,7 @@ def calc_solution(courant, dx, dy, plot_3d=False):
     print(" | ".join(strings))
     
     figure = plt.figure(figsize=(11, 7), dpi=100)
+    figure.suptitle(title)
     colormap = cm.viridis # @UndefinedVariable
     axes = {}
     
@@ -93,8 +96,13 @@ def calc_solution(courant, dx, dy, plot_3d=False):
         figure.colorbar(contours, cax=cax, orientation="vertical")
     
     plt.tight_layout()
-    plt.show()
 
 
-if __name__ == "__main__":
+def main():
     calc_solution(courant=0.1, dx=0.025, dy=0.025, plot_3d=True)
+    
+    
+if __name__ == "__main__":
+    main()
+    plt.show()
+    

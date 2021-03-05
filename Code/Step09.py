@@ -26,7 +26,10 @@ def calc_solution(iterations, dx, dy, plot_3d):
     p = np.zeros((nx, ny), order="F")
     p[-1,:] = y
     
+    title = "Laplace Equation (2D)"
+    
     figure = plt.figure(figsize=(11, 7), dpi=100)
+    figure.suptitle(title)
     colormap = cm.viridis # @UndefinedVariable
     axes = {}
     
@@ -64,7 +67,7 @@ def calc_solution(iterations, dx, dy, plot_3d):
         residual = solver(dx, dy, p)
     
     print("-".center(80, "-"))
-    print("Laplace Equation (2D)".center(80))
+    print(title.center(80))
     print("-".center(80, "-"))
     
     strings = []
@@ -85,8 +88,13 @@ def calc_solution(iterations, dx, dy, plot_3d):
         figure.colorbar(contours, cax=cax, orientation="vertical")
     
     plt.tight_layout()
-    plt.show()
+
+
+def main():
+    calc_solution(iterations=1500, dx=0.05, dy=0.05, plot_3d=False)
 
 
 if __name__ == "__main__":
-    calc_solution(iterations=1500, dx=0.05, dy=0.05, plot_3d=False)
+    main()
+    plt.show()
+    
