@@ -242,9 +242,123 @@ DO J = 2, N-1
     END DO
 END DO
 
-
-
 END SUBROUTINE STEP_09
 
 ! ==============================================================================
 
+SUBROUTINE STEP_10(DX, DY, P, B, RESIDUAL, M, N)
+!
+! SOLVE TWO DIMENSIONAL POISSON EQUATION.
+!
+IMPLICIT NONE
+INTEGER, INTENT(IN) :: M, N
+DOUBLE PRECISION, INTENT(IN) :: DX, DY
+DOUBLE PRECISION, DIMENSION(M, N), INTENT(IN) :: B
+DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: P
+DOUBLE PRECISION, INTENT(OUT) :: RESIDUAL
+
+INTEGER :: I, J
+DOUBLE PRECISION :: FACTOR
+DOUBLE PRECISION, DIMENSION(M, N) :: PN
+
+PN = P
+FACTOR = 1.0D0 / (2.0D0 * (DX * DX + DY * DY))
+RESIDUAL = 0.0D0
+
+DO J = 2, N-1
+    DO I = 2, M-1
+        P(I,J) =  FACTOR * ( &
+            DY * DY * (PN(I+1,J) + PN(I-1,J)) + & 
+            DX * DX * (PN(I,J+1) + PN(I,J-1)) - &
+            DX * DX * DY * DY * B(I,J))
+        RESIDUAL = MAX(RESIDUAL, ABS(P(I,J) - PN(I,J)))
+    END DO
+END DO
+
+END SUBROUTINE STEP_10
+
+! ==============================================================================
+
+SUBROUTINE STEP_11(INNER, DX, DY, DT, RHO, NU, P, U, V, M, N)
+!
+! SOLVE THE TWO DIMENSIONAL CAVITY FLOW.
+!
+IMPLICIT NONE
+INTEGER, INTENT(IN) :: INNER, M, N
+DOUBLE PRECISION, INTENT(IN) :: DX, DY, DT, RHO, NU
+DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: P, U, V
+
+INTEGER :: I, J, K
+DOUBLE PRECISION :: UDX, UDY, VDX, VDY, FDX, FDY, FACTOR
+DOUBLE PRECISION, DIMENSION(M, N) :: PN, UN, VN, RHS
+
+! SET PRESSURE POISSON EQUATION SOURCE TERM.
+
+FDX = 1.0D0 / (2.0D0 * DX)
+FDY = 1.0D0 / (2.0D0 * DY)
+FACTOR = (RHO * DX * DX * DY * DY) / (2.0D0 * (DX * DX + DY * DY))
+
+DO J = 2, N-1
+    DO I = 2, M-1
+        UDX = (U(I+1,J) - U(I-1,J)) * FDX
+        UDY = (U(I,J+1) - U(I,J-1)) * FDY
+        VDX = (V(I+1,J) - V(I-1,J)) * FDX
+        VDY = (V(I,J+1) - V(I,J-1)) * FDY
+        RHS(I,J) = FACTOR * ( &
+            (UDX + VDY) / DT - UDX * UDX - 2.0D0 * UDY * VDX - VDY * VDY)
+    END DO
+END DO
+
+FACTOR = 1.0D0 / (2.0D0 * (DX * DX + DY * DY))
+
+DO K = 1, INNER
+
+    ! SET BOUNDARY CONDITIONS OF PRESSURE.
+    
+    DO I = 1, M
+        P(I,1) = P(I,2) ! y = ymin | dp/dy = 0.0
+        P(I,N) = 0.0D0  ! y = ymax | p = 0.0
+    END DO
+
+    DO J = 2, N-1
+        P(1,J) = P(2,J)   ! x = xmin | dp/dx = 0.0
+        P(M,J) = P(M-1,J) ! x = xmax | dp/dx = 0.0
+    END DO
+    
+    ! SOLVE PRESSURE POISSON EQUATION.
+    
+    PN = P
+
+    DO J = 2, N-1
+        DO I = 2, M-1
+            P(I,J) = FACTOR * ( &
+                (PN(I+1,J) + PN(I-1,J)) * (DY * DY) + &
+                (PN(I,J+1) + PN(I,J-1)) * (DX * DX) ) - RHS(I,J)
+        END DO
+    END DO
+END DO
+
+! SOLVE VELOCITIES USING THE MOMENTUM EQUATIONS.
+
+UN = U
+VN = V
+
+DO J = 2, N-1
+    DO I = 2, M-1
+        U(I,J) = UN(I,J) &
+            - UN(I,J) * DT / DX * (UN(I,J) - UN(I-1,J)) &
+            - VN(I,J) * DT / DY * (UN(I,J) - UN(I,J-1)) &
+            - DT / (2.0D0 * RHO * DX) * (P(I+1,J) - P(I-1,J)) &
+            + NU * DT / DX / DX * (UN(I+1,J) - 2.0D0*UN(I,J) + UN(I-1,J)) &
+            + NU * DT / DY / DY * (UN(I,J+1) - 2.0D0*UN(I,J) + UN(I,J-1))
+        
+        V(I,J) = VN(I,J) &
+            - UN(I,J) * DT / DX * (VN(I,J) - VN(I-1,J)) &
+            - VN(I,J) * DT / DY * (VN(I,J) - VN(I,J-1)) &
+            - DT / (2.0D0 * RHO * DY) * (P(I,J+1) - P(I,J-1)) &
+            + NU * DT / DX / DX * (VN(I+1,J) - 2.0D0*VN(I,J) + VN(I-1,J)) &
+            + NU * DT / DY / DY * (VN(I,J+1) - 2.0D0*VN(I,J) + VN(I,J-1))
+    END DO
+END DO
+
+END SUBROUTINE STEP_11

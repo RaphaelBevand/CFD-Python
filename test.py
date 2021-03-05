@@ -1,15 +1,16 @@
-import matplotlib.pyplot as plt 
-import numpy as np 
+import numpy as np
+import matplotlib
+matplotlib.use("Qt5Agg")
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-x = np.arange(0, 2 * np.pi, 0.1) 
-X,Y = np.meshgrid(x,x) 
-f1 = np.sin(X) + np.sin(Y) 
-f2 = np.cos(X) + np.cos(Y) 
+data = np.arange(100, 0, -1).reshape(10, 10)
 
-plt.figure() 
-C = plt.contourf(f1) 
-plt.show() 
-for coll in C.collections: 
-    plt.gca().collections.remove(coll) 
-C = plt.contourf(f2) 
-plt.draw() 
+fig, ax = plt.subplots()
+divider = make_axes_locatable(ax)
+cax = divider.append_axes('right', size='5%', pad=0.05)
+
+im = ax.imshow(data, cmap='bone')
+
+fig.colorbar(im, cax=cax, orientation='vertical')
+plt.show()

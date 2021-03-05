@@ -31,6 +31,8 @@ def SolveCavityFlow(nx, ny, nit, rho, nu, sigma, xmax, ymax, tmax):
     
     print(" Cavity Flow ".center(80, "="))
     print(f"dt = {dt:.5f}")
+    print(f"dx = {dx:.5f}")
+    print(f"dy = {dy:.5f}")
     
     u = np.zeros((nx, ny), order="F")
     v = np.zeros_like(u)
@@ -59,6 +61,8 @@ def SolveCavityFlow(nx, ny, nit, rho, nu, sigma, xmax, ymax, tmax):
         SetBoundaryCondition(u, v)
         
         timestep += dt
+    
+    print(timestep)
 
     _ = plt.figure(figsize=(11,7), dpi=100)
     
@@ -86,6 +90,6 @@ def SolveCavityFlow(nx, ny, nit, rho, nu, sigma, xmax, ymax, tmax):
     plt.show()
 
 
-SolveCavityFlow(nx=61, ny=61, nit=100, rho=1.0, nu=0.1, sigma=0.05, xmax=2.0, ymax=2.0, tmax=0.5)
+SolveCavityFlow(nx=101, ny=101, nit=100, rho=1.0, nu=0.1, sigma=0.05, xmax=2.0, ymax=2.0, tmax=0.5)
 
 
