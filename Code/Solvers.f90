@@ -109,6 +109,16 @@ DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: U
 INTEGER :: I, J
 DOUBLE PRECISION, DIMENSION(M, N) :: UN
 
+DO I = 1, M
+    U(I,1) = 1.0D0
+    U(I,N) = 1.0D0
+END DO
+
+DO J = 1, N
+    U(1,J) = 1.0D0
+    U(M,J) = 1.0D0
+END DO
+
 UN = U
 
 DO J = 2, N
@@ -134,6 +144,20 @@ DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: U, V
 
 INTEGER :: I, J
 DOUBLE PRECISION, DIMENSION(M, N) :: UN, VN
+
+DO I = 1, M
+    U(I,1) = 1.0D0
+    U(I,N) = 1.0D0
+    V(I,1) = 1.0D0
+    V(I,N) = 1.0D0    
+END DO
+
+DO J = 1, N
+    U(1,J) = 1.0D0
+    U(M,J) = 1.0D0
+    V(1,J) = 1.0D0
+    V(M,J) = 1.0D0
+END DO
 
 UN = U
 VN = V
@@ -166,6 +190,16 @@ DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: U
 INTEGER :: I, J
 DOUBLE PRECISION, DIMENSION(M, N) :: UN
 
+DO I = 1, M
+    U(I,1) = 1.0D0
+    U(I,N) = 1.0D0   
+END DO
+
+DO J = 1, N
+    U(1,J) = 1.0D0
+    U(M,J) = 1.0D0
+END DO
+
 UN = U
 
 DO J = 2, N-1
@@ -191,6 +225,20 @@ DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: U, V
 
 INTEGER :: I, J
 DOUBLE PRECISION, DIMENSION(M, N) :: UN, VN
+
+DO I = 1, M
+    U(I,1) = 1.0D0
+    U(I,N) = 1.0D0
+    V(I,1) = 1.0D0
+    V(I,N) = 1.0D0    
+END DO
+
+DO J = 1, N
+    U(1,J) = 1.0D0
+    U(M,J) = 1.0D0
+    V(1,J) = 1.0D0
+    V(M,J) = 1.0D0
+END DO
 
 UN = U
 VN = V
@@ -229,6 +277,16 @@ INTEGER :: I, J
 DOUBLE PRECISION :: FACTOR
 DOUBLE PRECISION, DIMENSION(M, N) :: PN
 
+DO I = 1, M
+    P(I,1) = P(I,2)
+    P(I,N) = P(I,N-1)
+END DO
+
+DO J = 1, N
+    P(1,J) = 0.0D0
+    P(M,J) = (J - 1.0D0) * DY
+END DO
+
 PN = P
 FACTOR = 1.0D0 / (2.0D0 * (DX * DX + DY * DY))
 RESIDUAL = 0.0D0
@@ -246,20 +304,30 @@ END SUBROUTINE STEP_09
 
 ! ==============================================================================
 
-SUBROUTINE STEP_10(DX, DY, P, B, RESIDUAL, M, N)
+SUBROUTINE STEP_10(DX, DY, RHS, P, RESIDUAL, M, N)
 !
 ! SOLVE TWO DIMENSIONAL POISSON EQUATION.
 !
 IMPLICIT NONE
 INTEGER, INTENT(IN) :: M, N
 DOUBLE PRECISION, INTENT(IN) :: DX, DY
-DOUBLE PRECISION, DIMENSION(M, N), INTENT(IN) :: B
+DOUBLE PRECISION, DIMENSION(M, N), INTENT(IN) :: RHS
 DOUBLE PRECISION, DIMENSION(M, N), INTENT(INOUT) :: P
 DOUBLE PRECISION, INTENT(OUT) :: RESIDUAL
 
 INTEGER :: I, J
 DOUBLE PRECISION :: FACTOR
 DOUBLE PRECISION, DIMENSION(M, N) :: PN
+
+DO I = 1, M
+    P(I,1) = 0.0D0
+    P(I,N) = 0.0D0
+END DO
+
+DO J = 1, N
+    P(1,J) = 0.0D0
+    P(M,J) = 0.0D0
+END DO
 
 PN = P
 FACTOR = 1.0D0 / (2.0D0 * (DX * DX + DY * DY))
@@ -270,7 +338,7 @@ DO J = 2, N-1
         P(I,J) =  FACTOR * ( &
             DY * DY * (PN(I+1,J) + PN(I-1,J)) + & 
             DX * DX * (PN(I,J+1) + PN(I,J-1)) - &
-            DX * DX * DY * DY * B(I,J))
+            DX * DX * DY * DY * RHS(I,J))
         RESIDUAL = MAX(RESIDUAL, ABS(P(I,J) - PN(I,J)))
     END DO
 END DO

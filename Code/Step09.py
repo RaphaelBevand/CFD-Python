@@ -7,135 +7,86 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from Solvers import step_09 # @UnresolvedImport
+from Solvers import step_09 as solver # @UnresolvedImport
 
-# ==============================================================================
-# USER INPUT
-# ==============================================================================
 
-xmax = 2.0
-ymax = 1.0
-iterations = 1600
-dx = 0.05
-dy = 0.05
-
-plot_3d = False
-animate = False
-
-# ==============================================================================
-# INITIALIZE ARRAYS
-# ==============================================================================
-
-print(f"iterations = {iterations:.4f}")
-print(f"dx = {dx:.4f}")
-print(f"dy = {dy:.4f}")
-
-nx = int(xmax/dx)
-ny = int(ymax/dy)
-
-x = np.linspace(0.0, xmax, nx)
-y = np.linspace(0.0, ymax, ny)
-X, Y = np.meshgrid(x, y, indexing="ij")
-
-def set_boundary_condition(p):
-    p[0,:] = 0.0
+def calc_solution(iterations, dx, dy, plot_3d):
+    xmax = 2.0
+    ymax = 1.0
+    
+    nx = int(xmax / dx)
+    ny = int(ymax / dy)
+    
+    x = np.linspace(0.0, xmax, nx)
+    y = np.linspace(0.0, ymax, ny)
+    X, Y = np.meshgrid(x, y, indexing="ij")
+    
+    p = np.zeros((nx, ny), order="F")
     p[-1,:] = y
-    p[:,0] = p[:,1]
-    p[:,-1] = p[:,-2]
-    return
-
-p = np.zeros((nx, ny), order="F")
-set_boundary_condition(p)
-
-solution = p.copy(order="F")
     
-# ==============================================================================
-# START SIMULATION AND PLOT.
-# ==============================================================================
-
-class PlotSolution(object):
-    def __init__(self, plot_3d=False):
-        figure = plt.figure(figsize=(11, 7), dpi=100)
-        axes = {}
-        
-        if plot_3d:
-            axes[0] = figure.add_subplot(121, projection="3d")
-            axes[1] = figure.add_subplot(122, projection="3d")
-            
-            for i in [0, 1]:
-                axes[i].view_init(30, 225)
-                axes[i].set_xlabel("x")
-                axes[i].set_ylabel("y")
-                axes[i].set_zlabel("u")
-        else:
-            axes[0] = figure.add_subplot(121)
-            axes[1] = figure.add_subplot(122)
-
-            for i in [0, 1]:
-                axes[i].set_xlabel("x")
-                axes[i].set_ylabel("y")
-                        
-        self.plot_3d = plot_3d
-        self.figure = figure
-        self.axes = axes
-        self.colormap = cm.viridis # @UndefinedVariable
-        
-    def plot_solution(self, i, X, Y, u, iteration):
-        self.axes[i].set_title(f"Iteration {iteration:>6d}")
-        
-        if self.plot_3d:
-            self.axes[i].plot_surface(X, Y, u, 
-                cmap=self.colormap, rstride=1, cstride=1)
-        else:
-            self.axes[i].contourf(X, Y, u)
-            self.axes[i].set_aspect("equal")
-
-    def animation_init(self):
-        self.plot_solution(0, X, Y, p, 0)
-        self.plot_solution(1, X, Y, solution, 0)
-        
-    def animation_step(self, step):
-        if step > iterations:
-            self.animator.event_source.stop()
-        
-        residual = step_09(dx, dy, solution)
-        set_boundary_condition(solution)
-        print(f"residual = {residual:>8.5f}")
-
-        self.plot_solution(1, X, Y, solution, step)
+    figure = plt.figure(figsize=(11, 7), dpi=100)
+    colormap = cm.viridis # @UndefinedVariable
+    axes = {}
     
-    def start_animation(self):
-        self.animation_init()
+    if plot_3d:
+        axes[0] = figure.add_subplot(121, projection="3d")
+        axes[1] = figure.add_subplot(122, projection="3d")
         
-        self.animator = FuncAnimation(
-            fig = self.figure, 
-            func = self.animation_step, 
-            init_func = self.animation_init,
-            interval = 1,
-            blit = False)
+        for i in [0, 1]:
+            axes[i].view_init(30, 225)
+            axes[i].set_xlabel("x")
+            axes[i].set_ylabel("y")
+            axes[i].set_zlabel("u")
         
-        # self.animator.save("step09.gif", writer='imagemagick')
-        plt.show()
+        axes[0].plot_surface(X, Y, p, cmap=colormap, rstride=1, cstride=1) 
+        
+    else:
+        axes[0] = figure.add_subplot(121)
+        axes[1] = figure.add_subplot(122)
+        
+        for i in [0, 1]:
+            axes[i].set_xlabel("x")
+            axes[i].set_ylabel("y")
+        
+        contours = axes[0].contourf(X, Y, p)
+        axes[0].set_aspect("equal")
+        
+        divider = make_axes_locatable(axes[0])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        figure.colorbar(contours, cax=cax, orientation="vertical")
+        
+    axes[0].title.set_text("Initial Solution")
+    axes[1].title.set_text("Final Solution")
     
-    def plot_final_solution(self):
-        for _ in range(iterations):
-            residual = step_09(dx, dy, solution)
-            set_boundary_condition(solution)
-            print(f"residual = {residual:>8.5f}")
+    for _ in range(iterations):
+        residual = solver(dx, dy, p)
+    
+    print("-".center(80, "-"))
+    print("Laplace Equation (2D)".center(80))
+    print("-".center(80, "-"))
+    
+    strings = []
+    strings.append(f"dx = {dx:>5.2e}")
+    strings.append(f"dy = {dy:>5.2e}")
+    strings.append(f"iterations = {iterations:>5d}")
+    strings.append(f"residual = {residual:>5.2e}")
+    print(" | ".join(strings))
+    
+    if plot_3d:
+        axes[1].plot_surface(X, Y, p, cmap=colormap, rstride=1, cstride=1) 
+    else:
+        contours = axes[1].contourf(X, Y, p)
+        axes[1].set_aspect("equal")    
+        
+        divider = make_axes_locatable(axes[1])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        figure.colorbar(contours, cax=cax, orientation="vertical")
+    
+    plt.tight_layout()
+    plt.show()
 
-        self.plot_solution(0, X, Y, p, 0)
-        self.plot_solution(1, X, Y, solution, iterations)
-        plt.show()
 
-
-if plot_3d:
-    animate = False
-
-plotter = PlotSolution(plot_3d)
-
-if animate:
-    plotter.start_animation()
-else:
-    plotter.plot_final_solution()
+if __name__ == "__main__":
+    calc_solution(iterations=1500, dx=0.05, dy=0.05, plot_3d=False)
